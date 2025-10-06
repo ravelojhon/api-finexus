@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { prisma } from './prisma/client';
 import productRoutes from './routes/product.routes';
+import { errorHandler } from './middlewares/errorHandler';
 
 const app = express();
 
@@ -30,5 +31,8 @@ app.get('/api/products/test', async (req, res) => {
 
 // Product routes
 app.use('/api/products', productRoutes);
+
+// Error handling middleware (must be last)
+app.use(errorHandler);
 
 export default app;
