@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import { prisma } from './prisma/client';
 import productRoutes from './routes/product.routes';
 import { errorHandler } from './middlewares/errorHandler';
+import { specs, swaggerUi } from './swagger';
 
 const app = express();
 
@@ -28,6 +29,12 @@ app.get('/api/products/test', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// Swagger documentation
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'FinExus API Documentation',
+}));
 
 // Product routes
 app.use('/api/products', productRoutes);
