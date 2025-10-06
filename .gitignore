@@ -55,6 +55,13 @@ jspm_packages/
 *.swp
 *.swo
 
+# ESLint and Prettier
+.eslintcache
+.prettierignore
+
+# Husky
+.husky/_
+
 # OS generated files
 .DS_Store
 .DS_Store?
