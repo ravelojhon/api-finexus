@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  postgres:
+  db:
     image: postgres:15
     container_name: finexus_postgres
     environment:
@@ -15,11 +15,24 @@ services:
     networks:
       - finexus_network
 
+  backend:
+    build: .
+    container_name: finexus_backend
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/productdb?schema=public"
+      PORT: 4000
+    networks:
+      - finexus_network
+
   postgrest:
     image: postgrest/postgrest:v11.2.0
     container_name: finexus_postgrest
     environment:
-      PGRST_DB_URI: postgres://postgres:postgres@postgres:5432/productdb
+      PGRST_DB_URI: postgres://postgres:postgres@db:5432/productdb
       PGRST_DB_SCHEMAS: public
       PGRST_DB_ANON_ROLE: anon
       PGRST_JWT_SECRET: your-super-secret-jwt-token-with-at-least-32-characters-long
@@ -27,7 +40,7 @@ services:
     ports:
       - "3001:3000"
     depends_on:
-      - postgres
+      - db
     networks:
       - finexus_network
 
@@ -40,7 +53,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: productdb
     depends_on:
-      - postgres
+      - db
     networks:
       - finexus_network
     command: |
@@ -48,10 +61,10 @@ services:
         echo 'Esperando a que PostgreSQL esté listo...'
         sleep 10
         echo 'Configurando usuario anónimo para PostgREST...'
-        PGPASSWORD=postgres psql -h postgres -U postgres -d productdb -c \"CREATE ROLE anon NOLOGIN;\"
-        PGPASSWORD=postgres psql -h postgres -U postgres -d productdb -c \"GRANT USAGE ON SCHEMA public TO anon;\"
-        PGPASSWORD=postgres psql -h postgres -U postgres -d productdb -c \"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon;\"
-        PGPASSWORD=postgres psql -h postgres -U postgres -d productdb -c \"ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO anon;\"
+        PGPASSWORD=postgres psql -h db -U postgres -d productdb -c \"CREATE ROLE anon NOLOGIN;\"
+        PGPASSWORD=postgres psql -h db -U postgres -d productdb -c \"GRANT USAGE ON SCHEMA public TO anon;\"
+        PGPASSWORD=postgres psql -h db -U postgres -d productdb -c \"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon;\"
+        PGPASSWORD=postgres psql -h db -U postgres -d productdb -c \"ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO anon;\"
         echo 'Configuración completada!'
       "
 
