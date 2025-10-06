@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { prisma } from './prisma/client';
+import productRoutes from './routes/product.routes';
 
 const app = express();
 
@@ -26,5 +27,8 @@ app.get('/api/products/test', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// Product routes
+app.use('/api/products', productRoutes);
 
 export default app;
